@@ -1,149 +1,220 @@
-# CNN based Accident Detection and Emergency Response System
+# 🚨 Accident Detection and Emergency Response System
 
-A system that will continuously monitor for the accident through the CCTV installed and notify the concerned authorities for the instant rescue.
+A **CNN / YOLO-based Accident Detection System** that analyzes uploaded videos or live feeds to detect road accidents and automatically notify rescue teams via email.  
+The system also provides a dashboard with analytics, accident history, and detailed incident views, making it suitable for academic demos and smart safety applications.
 
-## Tech Stack Used
+---
 
-- Frontend
-  - Next JS v.14
-  - Tailwind CSS
-  - TypeScript
-  - Axios
-  - React Query
-  - React Hook Form
-  - Leaflet
-  - Recharts
-- Backend
-  - Flask
-  - Python
-  - MongoDB
-  - Nodemailer
-  - Cloudinary
-- ML Model
-  - YOLOv8
-  - Roboflow
+## 📘 Project Background
 
-## Setup Guide
+This project was initially collected from a friend in an early-stage form and later **significantly enhanced, fixed, and extended**.  
+All major backend integrations, frontend dashboard logic, database handling, and alert systems were implemented and stabilized afterward to make the system demo-ready and robust.
 
-1. Firstly clone this repo locally(if you want you can fork it and clone it too) :
-   ```
-   git clone https://github.com/ebraj/Accident-Detection-Web-App.git
-   ```
-2. Once cloned successfully, open this project in your favourite IDE(VSCode in my case)
+---
 
-### Backend Setup
+## ✨ Major Improvements
 
-1. Once the above steps are done, open the terminal of your IDE and head over to the `server` directory using `cd server`
-2. Then we will create the `virutalenv`. To create the `virtualenv` we will use the below command :
+### ✅ Backend (Flask)
 
-   ```
-   # For windows
-   python -m venv venv
+- Integrated **MongoDB Atlas** (replaced local MongoDB) with a standardized accident data schema.
+- Fixed date aggregation issues for accurate dashboard analytics.
+- Implemented robust REST APIs:
+  - `POST /api/v1/accident/create` – Create and store a new accident record.
+  - `GET /api/v1/accident/all` – Fetch all recorded accidents.
+  - `GET /api/v1/accident/summary` – Return summary/aggregated analytics.
+  - `GET /api/v1/accident/<id>` – Fetch a single accident by ID.
+- Implemented **Quick Email Alert System** using Flask-Mail to notify rescue teams instantly.
+- Resolved circular imports via a shared extensions pattern, improving structure and maintainability.
+- Added better error handling and improved overall backend stability.
 
-   <!-- OR -->
+### ✅ Frontend (Next.js)
 
-   # For macos
-   python3 -m venv venv
-   ```
+- Dashboard redesigned for clearer presentation and academic evaluation.
+- Monthly accident overview chart powered by backend aggregation.
+- "All Datas" table connected directly to live backend APIs (no dummy/mock data).
+- Color-coded severity indicators: **High / Medium / Low** for quick risk understanding.
+- Single Accident Details page with:
+  - Detailed accident information.
+  - Map view using latitude and longitude.
+  - Accident image preview from generated snapshots.
+  - Quick Mail button to trigger rescue email.
+- Removed mock data and polished UI/UX for smooth demos and viva.
 
-3. Once the `virtualenv` is created, we will activate it using the below command :
-   ```
-   source venv/bin/activate
-   ```
-4. And finally we will install the packages which are required for our project using the below command :
+### ✅ ML / Video Processing
 
-   ```
-   # For windows
-   pip install -r requirements.txt
+- **YOLOv8** integrated for object detection and accident inference.
+- Video frame processing pipeline to detect accidents in uploaded videos.
+- Detection results are persisted to MongoDB and linked to the dashboard and alert system.
+- Code structure prepared for future **real-time CCTV / IP camera inference**.
 
-   <!-- OR -->
+---
 
-   # For macos
-   pip3 install -r requirements.txt
-   ```
+## 🧱 System Architecture
 
-5. Create the `.env` file referencing to the `.env.example` file.
-6. As everything is ready now, we can run the backend as
+```text
+Frontend (Next.js Dashboard)
+          ↓
+Backend (Flask REST APIs)
+          ↓
+MongoDB Atlas (accident_results collection)
+          ↓
+Email Alert System (Gmail SMTP via Flask-Mail)
+          ↓
+Rescue Teams / Authorities
+```
 
-   ```
-   # For windows
-   python app.py
+- **Frontend**: Analytics, tables, maps, and detailed accident views.
+- **Backend**: API layer, business logic, and email notification engine.
+- **Database**: Central store for accidents, images, and metadata on MongoDB Atlas.
+- **Notification**: Email alerts containing severity, address, coordinates, and map links.
 
-   <!-- OR -->
+---
 
-   # For macos
-   python3 app.py
+## 🖼️ Accident Image Generation & Storage
 
-   ```
+### How Accident Images Are Generated
 
-### Frontend Setup
+When a video is uploaded, it is analyzed using the YOLO-based accident detection model:
 
-The frontend setup is quite easy, unlike backend setup as it does not require any virtual env setup. Let's proceed to frontend setup.
+- The system processes the video frame by frame.
+- If an accident is detected, it:
+  - Extracts the relevant frame from the video.
+  - Draws bounding boxes around detected objects.
+  - Saves this processed frame as an accident snapshot.
 
-1. Open the new vscode terminal, and head over into the client directory as `cd client` simply run the package installation command as
-   ```
-   npm install
-   ```
-2. Once the packages are installed properly, run the frontend application
-   ```
-   npm run dev
-   ```
-3. And you can view the page with the url `http://localhost:3000`
-4. `Note`: We are using the Nodemailer service in the frontend also, so we need to setup the `.env` file for the frontend too(Reference to `.env.example` file).
+Images are generated **only for accident-positive videos**, ensuring authenticity.
 
-## Final Setup(Model Implementor)
+### Image Storage Logic
 
-1. Setup the virtual environment like in the backend setup(Step 1-4).
-2. And then run the application using `python app.py`
+- Accident images are generated **directly from uploaded accident videos**.
+- Images are stored externally (e.g., Cloudinary or configured storage).
+- MongoDB stores a reference via the `image_url` field.
+- No images are fetched from random online sources, and no image is stored if no accident is detected.
 
-## Helpful References
+### Image Usage in the Application
 
-- Blogs :
-  - Flask :
-    - [The complete Flask beginner tutorial](https://dev.to/gajesh/the-complete-flask-beginner-tutorial-124i)
-  - Flask with YOLO Model + Frontend :
-    - [How to Detect Objects in Images Using the YOLOv8 Neural Network](https://www.freecodecamp.org/news/how-to-detect-objects-in-images-using-yolov8/)
-  - Model Deployment :
-    - [Develop Your Machine Learning API for Image Object Detection(YOLOv8) with Python Flask API](https://freedium.cfd/https://python.plainenglish.io/develop-your-machine-learning-api-for-image-object-detection-yolov8-with-python-flask-api-f393cb7e1e43)
-- Videos :
-  - NextJS(Frontend) + Flask(Backend)
-    - [How to Create a Flask + Next.js Project | Python Backend + Next.js & React Frontend](https://youtu.be/OwxxCibSFKk?si=0BBvmiY8WkK2cjTj)
-  - Projects
-    - [YOLOv8 Course - Real Time Object Detection Web Application using YOLOv8 and Flask - Webcam/IP Camera](https://youtu.be/xzN_aG917-8?si=svQKzEL14o-afgFX)
-- Codes :
-  - https://github.com/MuhammadMoinFaisal/Computervisionprojects/tree/main/YOLOv8-CrashCourse
+Accident images are displayed in:
 
-## UIS
+- Single Accident Details page in the dashboard.
+- Email alerts sent to rescue teams, so each image corresponds to a real incident frame.
 
-![Login](./uis/login.png)
-![Homepage](./uis/homepage.png)
-![Dashboard](./uis/dashboard.png)
-![AllDatas](./uis/accident-datas.png)
-![Single Datas](./uis/single-accident.png)
-![Email](./uis/email.png)
+---
 
-## Team Members
+## 🗂️ Database Schema (`accident_results`)
 
-<table>
-  <tr>
-    <td valign="top" align="center">
-        <div>
-          <img src="https://github.com/sam55-c.png" width="150px;"/><br /><sub><a href="https://github.com/sam55-c">Samundra <br> Poudel</a>
-        </div>
-    </td>
-    <td valign="top" align="center">
-        <div>
-          <img src="https://github.com/7xetri.png" width="150px;"/><br /><sub><a href="https://github.com/7xetri">Saugat Thapa</a>
-        </div>
-    </td>
-    <td valign="top" align="center">
-        <div>
-          <img src="https://github.com/SDPhoton.png" width="150px;"/><br /><sub><a href="https://github.com/SDPhoton">Sagar Dhakal</a>
-        </div>
-    </td>
-    <td valign="top" align="center">
-        <div>
-          <img src="https://github.com/ebraj.png" width="150px;"/><br /><sub><a href="https://github.com/ebraj">Ebraj Grg</a>
-        </div>
-    </td>
-</table>
+Example document:
+
+```json
+{
+  "address": "MG Road",
+  "city": "Bangalore",
+  "latitude": 12.9716,
+  "longitude": 77.5946,
+  "severity": "High",
+  "severityInPercentage": 65,
+  "image_url": "generated_from_video_frame.jpg",
+  "video_name": "uploaded_video.mp4",
+  "date": "2024-03-02T23:23:47.000+00:00"
+}
+```
+
+- Ensure `date` is stored as a valid ISO string or MongoDB `Date` type for correct aggregation and analytics on the dashboard.
+
+---
+
+## 🔐 Environment Configuration (Important)
+
+This project uses personal credentials; anyone reusing it must configure their own values.
+
+Create `server/.env` with:
+
+```env
+# MongoDB
+MONGO_URI=your_mongodb_atlas_connection_string
+
+# JWT
+JWT_SECRET_KEY=your_secret_key
+
+# Email (Gmail SMTP)
+EMAIL=your_email@gmail.com
+PASSWORD=your_gmail_app_password
+SENDTO=receiver_email@gmail.com
+
+# Cloudinary (if used)
+CLOUD_NAME=your_cloudinary_name
+API_KEY=your_cloudinary_api_key
+API_SECRET=your_cloudinary_api_secret
+```
+
+- Use a **Gmail App Password**, not your regular Gmail account password.
+
+---
+
+## ▶️ How to Run the Project
+
+### Backend
+
+```bash
+cd server
+python app.py
+```
+
+- Backend runs at: `http://127.0.0.1:8080`
+
+### Frontend
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+- Frontend runs at: `http://localhost:3000`
+
+---
+
+## 📧 Quick Mail Feature
+
+Triggered from the **Single Accident Details** page.  
+Each email includes:
+
+- Accident severity.
+- Address.
+- Latitude & longitude.
+- Google Maps location link.
+
+Valid email credentials in `.env` are required for this feature to work correctly.
+
+---
+
+## ⚠️ Important Notes
+
+- Do **not** commit `.env` or any secrets to GitHub.
+- Always restart the backend after updating `.env`.
+- Ensure your IP/network can access MongoDB Atlas.
+- All accident images are generated from video frames, not from external/random images.
+
+---
+
+## 🧠 Viva / Evaluation One-Line Explanation
+
+> "Accident images are generated by extracting frames from uploaded videos when an accident is detected, ensuring that each image corresponds to a real incident rather than external or random sources."
+
+This sentence is ideal to use during viva/OR evaluation to explain how images are obtained.
+
+---
+
+## 🚀 Future Enhancements
+
+- Real-time CCTV accident detection.
+- SMS / WhatsApp alert integration.
+- Routing to multiple rescue teams based on location.
+- Admin dashboard for traffic authorities and control rooms.
+- Confidence score visualization for each detection on the dashboard.
+
+---
+
+## 👤 Credits & Note
+
+- Initial project structure was obtained in an early-stage form.
+- Major backend, frontend, database, ML, and alert system improvements were implemented later to make the current version **stable, demo-ready, and suitable for academic evaluation**.
